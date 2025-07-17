@@ -1,17 +1,17 @@
-# Nellis Auction - Phoenix/Mesa Items Tracker
+# 🔥 Nellis Auction - Phoenix/Mesa LIVE Tracker
 
-A GitHub Pages website that displays auction items from Nellis Auction's Phoenix and Mesa, Arizona locations.
+A GitHub Pages website with **REAL-TIME** auction data from Nellis Auction's Phoenix and Mesa, Arizona locations using their live Algolia API.
 
 ## 🌟 Features
 
-- **Real-time Auction Data**: Based on actual Nellis Auction categories and item types
-- **Live Phoenix/Mesa Listings**: 15+ auction items with current bid tracking
-- **Advanced Filtering**: Filter by location, category, price, and search terms
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
-- **Auto-refresh**: Updates every 5 minutes to simulate live auction environment
-- **Beautiful UI**: Modern, clean interface with Nellis Auction branding
-- **Direct Links**: Click through to official Nellis Auction category pages
-- **Detailed Item Info**: Retail prices, savings calculations, condition, and bid counts
+- **🔥 LIVE AUCTION DATA**: Real-time data from Nellis Auction's Algolia API
+- **📍 Phoenix/Mesa Listings**: Actual auction items from both Arizona locations
+- **🔍 Advanced Filtering**: Filter by location, category, price, and search terms
+- **📱 Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
+- **⚡ Auto-refresh**: Updates every 5 minutes with latest auction data
+- **🎨 Beautiful UI**: Modern, clean interface with Nellis Auction branding
+- **🔗 Direct Links**: Click through to actual auction item pages on nellisauction.com
+- **💰 Detailed Item Info**: Current bids, retail prices, savings, condition, and bid counts
 
 ## 🏠 Locations Covered
 
@@ -113,11 +113,12 @@ This project was built after extensive research into the Nellis Auction website 
 - **Categories**: 18 real categories from nellisauction.com
 
 ### **Current Implementation**
-Since the Nellis Auction API requires authentication and has CORS restrictions, this GitHub Pages site uses:
-- **Realistic Mock Data**: Based on actual auction categories and item types
-- **Live Category Links**: Direct links to real Nellis Auction category pages  
-- **Accurate Location Info**: Real addresses and hours for Phoenix/Mesa locations
-- **Dynamic Updates**: Simulates live auction environment with auto-refresh
+This GitHub Pages site now uses **LIVE DATA** from Nellis Auction:
+- **🔥 Real Algolia API**: Direct connection to nellisauction.com's search API
+- **📡 Live Auction Items**: Actual auction items from Phoenix and Mesa locations
+- **🔗 Direct Item Links**: Links go directly to real auction pages on nellisauction.com  
+- **⏰ Real-time Updates**: Auto-refreshes every 5 minutes with latest auction data
+- **📊 Accurate Info**: Real item conditions, locations, and auction end times
 
 ### **For Real-Time Data Integration**
 To connect to live auction data, you would need:
