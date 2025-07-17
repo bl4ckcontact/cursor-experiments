@@ -174,7 +174,7 @@ main {
 /* Auction grid */
 .auction-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(4, 1fr); /* Default 4 columns, overridden by grid classes */
     gap: 2rem;
     margin-bottom: 3rem;
 }
@@ -519,4 +519,152 @@ footer a:hover {
     margin: 0.5rem 0 0 0;
     color: #666;
     font-size: 14px;
+}
+
+/* Display Controls */
+.display-controls {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.display-controls h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.display-options {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.display-option {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.display-option label {
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.display-option select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.display-option select:hover {
+    border-color: #007bff;
+}
+
+.display-option select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+/* Dynamic grid columns */
+.auction-grid.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.auction-grid.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.auction-grid.grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.auction-grid.grid-6 {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1.5rem; /* Smaller gap for tighter layouts */
+}
+
+.auction-grid.grid-8 {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1rem; /* Even smaller gap for very tight layouts */
+}
+
+/* Adjust item content for smaller grid layouts */
+.auction-grid.grid-6 .auction-item,
+.auction-grid.grid-8 .auction-item {
+    font-size: 0.9rem;
+}
+
+.auction-grid.grid-6 .item-title,
+.auction-grid.grid-8 .item-title {
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.auction-grid.grid-6 .item-description,
+.auction-grid.grid-8 .item-description {
+    display: none; /* Hide description in very compact views */
+}
+
+.auction-grid.grid-8 .item-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.auction-grid.grid-8 .item-meta span {
+    font-size: 0.75rem;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 1400px) {
+    .auction-grid.grid-8 {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .auction-grid.grid-6,
+    .auction-grid.grid-8 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .auction-grid.grid-4,
+    .auction-grid.grid-6,
+    .auction-grid.grid-8 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .auction-grid.grid-2,
+    .auction-grid.grid-3,
+    .auction-grid.grid-4,
+    .auction-grid.grid-6,
+    .auction-grid.grid-8 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .display-options {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .auction-grid.grid-2,
+    .auction-grid.grid-3,
+    .auction-grid.grid-4,
+    .auction-grid.grid-6,
+    .auction-grid.grid-8 {
+        grid-template-columns: 1fr;
+    }
 }

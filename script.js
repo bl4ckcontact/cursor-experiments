@@ -2,7 +2,7 @@
 let allItems = [];
 let filteredItems = [];
 let currentPage = 1;
-const itemsPerPage = 12;
+let itemsPerPage = 12; // Now configurable
 let phoenixItemCount = 0;
 let mesaItemCount = 0;
 let totalItemsAvailable = 0;
@@ -27,6 +27,7 @@ const MESA_LOCATIONS = ['Mesa', 'Phoenix']; // Mesa items might be tagged as Pho
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();
+    initializeDisplayControls();
     loadAuctionData();
     updateLastUpdated();
 });
@@ -482,6 +483,40 @@ function initializeFilters() {
         document.getElementById('price-display').textContent = `Max Price: $${this.value}`;
         filterAndDisplayItems();
     });
+}
+
+// Initialize display controls
+function initializeDisplayControls() {
+    const itemsPerPageSelect = document.getElementById('items-per-page');
+    const gridColumnsSelect = document.getElementById('grid-columns');
+    
+    // Set up items per page control
+    itemsPerPageSelect.addEventListener('change', function() {
+        itemsPerPage = parseInt(this.value);
+        currentPage = 1; // Reset to first page
+        displayItems();
+        updatePagination();
+        updateLoadMoreSection();
+    });
+    
+    // Set up grid columns control
+    gridColumnsSelect.addEventListener('change', function() {
+        updateGridLayout(this.value);
+    });
+    
+    // Initialize with default grid layout
+    updateGridLayout(gridColumnsSelect.value);
+}
+
+// Update grid layout
+function updateGridLayout(columns) {
+    const auctionGrid = document.getElementById('auction-items');
+    
+    // Remove existing grid classes
+    auctionGrid.classList.remove('grid-2', 'grid-3', 'grid-4', 'grid-6', 'grid-8');
+    
+    // Add new grid class
+    auctionGrid.classList.add(`grid-${columns}`);
 }
 
 // Filter and display items
