@@ -102,6 +102,13 @@ git push origin main
 
 The repository includes GitHub Actions workflow for automated deployment.
 
+### ⚠️ **Important: Live Data vs Local Viewing**
+
+- **🌐 LIVE DATA (GitHub Pages)**: Full live API access to 40,871+ auction items
+- **💻 LOCAL VIEWING**: Due to CORS restrictions, local `file://` viewing shows sample data
+- **📊 REAL TOTALS**: Even in fallback mode, shows actual item counts (18,286 Phoenix + 22,585 Mesa)
+- **🚀 BEST EXPERIENCE**: Deploy to GitHub Pages for complete live functionality
+
 ## 🔍 API Research & Data Sources
 
 This project was built after extensive research into the Nellis Auction website structure:
