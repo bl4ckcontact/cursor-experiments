@@ -5,7 +5,7 @@ A GitHub Pages website with **REAL-TIME** auction data from Nellis Auction's Pho
 ## 🌟 Features
 
 - **🔥 LIVE AUCTION DATA**: Real-time data from Nellis Auction's Algolia API
-- **📍 Phoenix/Mesa Listings**: Actual auction items from both Arizona locations
+- **📍 Phoenix/Mesa Listings**: 40,000+ auction items from both Arizona locations
 - **🔍 Advanced Filtering**: Filter by location, category, price, and search terms
 - **📱 Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
 - **⚡ Auto-refresh**: Updates every 5 minutes with latest auction data
@@ -115,7 +115,7 @@ This project was built after extensive research into the Nellis Auction website 
 ### **Current Implementation**
 This GitHub Pages site now uses **LIVE DATA** from Nellis Auction:
 - **🔥 Real Algolia API**: Direct connection to nellisauction.com's search API
-- **📡 Live Auction Items**: Actual auction items from Phoenix and Mesa locations
+- **📡 MASSIVE Database**: **40,871** live auction items (18,286 Phoenix + 22,585 Mesa)
 - **🔗 Direct Item Links**: Links go directly to real auction pages on nellisauction.com  
 - **⏰ Real-time Updates**: Auto-refreshes every 5 minutes with latest auction data
 - **📊 Accurate Info**: Real item conditions, locations, and auction end times

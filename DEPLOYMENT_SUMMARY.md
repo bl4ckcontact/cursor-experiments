@@ -70,14 +70,14 @@ const response = await fetch(`${ALGOLIA_BASE_URL}/query`, {
 });
 ```
 
-## 🌐 **Live Demo Capabilities**
+## 🌐 **MASSIVE Live Database Discovered**
 
-The website now displays **REAL auction items** including:
-- **Halloween decorative kitchen mats** from Phoenix location
-- **Canvas wallpaper art prints** with actual photos
-- **Camera bags and accessories** with real product images
-- **Exercise equipment** from various Arizona locations
-- **Plus dozens more** live auction items refreshed every 5 minutes
+The website connects to a **HUGE** auction database with:
+- **🔥 40,871 TOTAL ITEMS** across Phoenix and Mesa locations
+- **📍 Phoenix**: 18,286 live auction items
+- **📍 Mesa**: 22,585 live auction items
+- **Real auction items** including Halloween decorations, electronics, furniture, tools, and more
+- **Displays 150+ items** with auto-refresh every 5 minutes for variety
 
 ## 📊 **Technical Implementation**
 

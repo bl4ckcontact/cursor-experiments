@@ -66,7 +66,7 @@ async function fetchRealAuctionData() {
         let searchData = {
             query: "",
             filters: `"Location Name":"Phoenix"`,
-            hitsPerPage: 50
+            hitsPerPage: 100
         };
         
         let response = await fetch(`${ALGOLIA_BASE_URL}/query`, {
@@ -81,12 +81,13 @@ async function fetchRealAuctionData() {
 
         let data = await response.json();
         let phoenixItems = data.hits || [];
+        let phoenixTotal = data.nbHits || 0;
         
         // Also get Mesa items if available
         searchData = {
             query: "",
             filters: `"Location Name":"Mesa"`,
-            hitsPerPage: 25
+            hitsPerPage: 50
         };
         
         response = await fetch(`${ALGOLIA_BASE_URL}/query`, {
@@ -101,10 +102,18 @@ async function fetchRealAuctionData() {
 
         data = await response.json();
         let mesaItems = data.hits || [];
+        let mesaTotal = data.nbHits || 0;
+        
+        // Store the total counts for stats
+        phoenixItemCount = phoenixTotal;
+        mesaItemCount = mesaTotal;
         
         // Combine both arrays
         const allHits = [...phoenixItems, ...mesaItems];
-        console.log(`Found ${phoenixItems.length} Phoenix items and ${mesaItems.length} Mesa items`);
+        console.log(`🔥 MASSIVE AUCTION DATABASE DISCOVERED!`);
+        console.log(`Phoenix: ${phoenixItems.length}/${phoenixTotal} items loaded`);
+        console.log(`Mesa: ${mesaItems.length}/${mesaTotal} items loaded`);
+        console.log(`📊 TOTAL AVAILABLE: ${phoenixTotal + mesaTotal} auction items!`);
         
         if (allHits.length > 0) {
             return allHits.map(hit => transformAlgoliaItem(hit));
@@ -302,12 +311,25 @@ function getFallbackData() {
 
 // Update statistics
 function updateStats() {
-    phoenixItemCount = allItems.filter(item => item.location === 'Phoenix').length;
-    mesaItemCount = allItems.filter(item => item.location === 'Mesa').length;
+    // If we have the actual totals from API, use those, otherwise count loaded items
+    if (phoenixItemCount === 0 && mesaItemCount === 0) {
+        phoenixItemCount = allItems.filter(item => item.location === 'Phoenix').length;
+        mesaItemCount = allItems.filter(item => item.location === 'Mesa').length;
+    }
     
-    document.getElementById('phoenix-count').textContent = `${phoenixItemCount} items available`;
-    document.getElementById('mesa-count').textContent = `${mesaItemCount} items available`;
-    document.getElementById('total-items').textContent = `Total: ${allItems.length} live auction items`;
+    const totalItems = phoenixItemCount + mesaItemCount;
+    const displayedItems = allItems.length;
+    
+    document.getElementById('phoenix-count').textContent = `${phoenixItemCount.toLocaleString()} items available`;
+    document.getElementById('mesa-count').textContent = `${mesaItemCount.toLocaleString()} items available`;
+    
+    if (displayedItems < totalItems) {
+        document.getElementById('total-items').textContent = `Showing ${displayedItems} of ${totalItems.toLocaleString()} live auction items`;
+        document.getElementById('display-note').textContent = `🔥 Massive inventory! Displaying recent items from each location`;
+    } else {
+        document.getElementById('total-items').textContent = `Total: ${totalItems.toLocaleString()} live auction items`;
+        document.getElementById('display-note').textContent = `All available items displayed`;
+    }
 }
 
 // Populate category filter
