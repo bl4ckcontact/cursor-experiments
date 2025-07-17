@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Nellis Auction - Phoenix/Mesa LIVE Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="https://nellisauction.com/favicon.ico">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🔥 Nellis Auction - Phoenix/Mesa LIVE Tracker</h1>
+            <p>Real-time auction data from Phoenix, AZ and Mesa, AZ locations</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading auction items...</p>
+        </div>
+
+        <div id="error" class="error hidden">
+            <p>⚠️ Unable to fetch auction data. Please try again later.</p>
+            <button onclick="loadAuctionData()">Retry</button>
+        </div>
+
+        <div id="stats" class="stats hidden">
+            <div class="stat-card">
+                <h3>🏜️ Phoenix Location</h3>
+                <p class="address">1402 S 40th Ave, Phoenix, AZ</p>
+                <p class="hours">Hours: 7:00AM - 6:00PM Daily</p>
+                <p class="item-count" id="phoenix-count">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>🌵 Mesa Location</h3>
+                <p class="address">8928 E Ray Rd Suite 101, Mesa, AZ</p>
+                <p class="hours">Hours: 7:00AM - 6:00PM Daily</p>
+                <p class="item-count" id="mesa-count">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>📊 Live Auction Data</h3>
+                <p class="address">Real-time auction listings</p>
+                <p class="hours">Updated every 5 minutes</p>
+                <p class="item-count" id="total-items">Loading...</p>
+                <p class="hours" id="display-note" style="font-size: 0.85em; color: #666; margin-top: 0.5rem;"></p>
+            </div>
+        </div>
+
+        <div id="filters" class="filters hidden">
+            <h2>Filter Items</h2>
+            <div class="filter-controls">
+                <select id="location-filter">
+                    <option value="">All Locations</option>
+                    <option value="phoenix">Phoenix</option>
+                    <option value="mesa">Mesa</option>
+                </select>
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                </select>
+                <input type="text" id="search-filter" placeholder="Search items...">
+                <input type="range" id="price-filter" min="0" max="1000" value="1000">
+                <span id="price-display">Max Price: $1000</span>
+            </div>
+        </div>
+
+        <div id="auction-items" class="auction-grid hidden"></div>
+
+        <div id="pagination" class="pagination hidden">
+            <button id="prev-page" onclick="changePage(-1)">← Previous</button>
+            <span id="page-info">Page 1 of 1</span>
+            <button id="next-page" onclick="changePage(1)">Next →</button>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Data sourced from <a href="https://nellisauction.com" target="_blank">nellisauction.com</a></p>
+            <p>This is an unofficial listing. Please visit the official site to bid.</p>
+            <p>Last updated: <span id="last-updated"></span></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
