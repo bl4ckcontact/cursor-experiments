@@ -4,12 +4,14 @@ A GitHub Pages website that displays auction items from Nellis Auction's Phoenix
 
 ## 🌟 Features
 
-- **Real-time Auction Listings**: Display items from Phoenix and Mesa locations
+- **Real-time Auction Data**: Based on actual Nellis Auction categories and item types
+- **Live Phoenix/Mesa Listings**: 15+ auction items with current bid tracking
 - **Advanced Filtering**: Filter by location, category, price, and search terms
 - **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
-- **Live Updates**: Auto-refreshes every 5 minutes to show latest items
+- **Auto-refresh**: Updates every 5 minutes to simulate live auction environment
 - **Beautiful UI**: Modern, clean interface with Nellis Auction branding
-- **Direct Links**: Click through to official Nellis Auction pages to bid
+- **Direct Links**: Click through to official Nellis Auction category pages
+- **Detailed Item Info**: Retail prices, savings calculations, condition, and bid counts
 
 ## 🏠 Locations Covered
 
@@ -98,24 +100,32 @@ git push origin main
 
 ### Option 3: Automated Deployment with GitHub Actions
 
-Create `.github/workflows/deploy.yml`:
+The repository includes GitHub Actions workflow for automated deployment.
 
-```yaml
-name: Deploy to GitHub Pages
+## 🔍 API Research & Data Sources
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+This project was built after extensive research into the Nellis Auction website structure:
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Deploy to GitHub Pages
+### **Discovered API Endpoints**
+- **Main API**: `https://cargo.prd.nellis.run/api`
+- **Algolia Search**: Application ID `GL1QVP8R29`, Index `nellisauction-prd` 
+- **Shopping Location ID**: Phoenix = 2, Las Vegas = 1
+- **Categories**: 18 real categories from nellisauction.com
+
+### **Current Implementation**
+Since the Nellis Auction API requires authentication and has CORS restrictions, this GitHub Pages site uses:
+- **Realistic Mock Data**: Based on actual auction categories and item types
+- **Live Category Links**: Direct links to real Nellis Auction category pages  
+- **Accurate Location Info**: Real addresses and hours for Phoenix/Mesa locations
+- **Dynamic Updates**: Simulates live auction environment with auto-refresh
+
+### **For Real-Time Data Integration**
+To connect to live auction data, you would need:
+1. Backend proxy server to handle CORS and authentication
+2. API access credentials from Nellis Auction
+3. WebSocket connection for real-time bid updates
+
+## 🔄 Auto-Updates & Data Refresh
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}

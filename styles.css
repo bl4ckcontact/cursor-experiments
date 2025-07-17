@@ -218,6 +218,104 @@ main {
     line-height: 1.4;
 }
 
+/* Price section */
+.price-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.current-bid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.bid-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.bid-amount {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #c41e3a;
+}
+
+.retail-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.retail-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.retail-amount {
+    font-size: 1rem;
+    color: #6c757d;
+    text-decoration: line-through;
+}
+
+.savings-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #28a745;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Item meta information */
+.item-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.item-location, .item-category, .item-condition {
+    font-size: 0.8rem;
+    color: #6c757d;
+    padding: 0.25rem 0.5rem;
+    background: #e9ecef;
+    border-radius: 12px;
+    width: fit-content;
+}
+
+.item-location {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.item-category {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.item-condition {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.bid-info {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
+/* Legacy styles for compatibility */
 .item-details {
     display: flex;
     justify-content: space-between;
@@ -229,14 +327,6 @@ main {
     font-size: 1.25rem;
     font-weight: 700;
     color: #c41e3a;
-}
-
-.item-location {
-    background: #f0f0f0;
-    padding: 0.25rem 0.75rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    color: #666;
 }
 
 .item-status {
