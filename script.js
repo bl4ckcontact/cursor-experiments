@@ -5,12 +5,20 @@ let currentPage = 1;
 const itemsPerPage = 12;
 let phoenixItemCount = 0;
 let mesaItemCount = 0;
+let totalItemsAvailable = 0;
+let isLoadingMore = false;
+let hasMoreItems = true;
 
 // Real Algolia Configuration from nellisauction.com
 const ALGOLIA_APP_ID = 'GL1QVP8R29';
 const ALGOLIA_API_KEY = 'd22f83c614aa8eda28fa9eadda0d07b9';
 const ALGOLIA_INDEX = 'nellisauction-prd';
 const ALGOLIA_BASE_URL = `https://${ALGOLIA_APP_ID}-dsn.algolia.net/1/indexes/${ALGOLIA_INDEX}`;
+
+// Pagination settings
+const API_ITEMS_PER_PAGE = 500; // Larger batches for efficiency
+let currentApiPage = 0;
+let loadedItemsCount = 0;
 
 // Phoenix shopping location ID is 2 based on the data we found
 const PHOENIX_LOCATION_ID = 2;
@@ -23,23 +31,30 @@ document.addEventListener('DOMContentLoaded', function() {
     updateLastUpdated();
 });
 
-// Load auction data from Algolia
+// Load auction data from Algolia with pagination support
 async function loadAuctionData() {
     try {
         showLoading();
         
-        // Fetch real data from Algolia
-        const items = await fetchRealAuctionData();
+        // Reset pagination state
+        currentApiPage = 0;
+        loadedItemsCount = 0;
+        allItems = [];
+        hasMoreItems = true;
         
-        if (items && items.length > 0) {
-            console.log(`Loaded ${items.length} live auction items from Nellis Auction`);
-            allItems = items;
+        // Load initial batch of items
+        const success = await loadMoreItems();
+        
+        if (success && allItems.length > 0) {
+            console.log(`✅ Loaded ${allItems.length} live auction items from Nellis Auction`);
+            console.log(`📊 Total available: ${totalItemsAvailable} items`);
         } else {
             console.log('⚠️ No live items loaded, using fallback data with real totals');
             allItems = getFallbackData();
             // Set the real totals even with fallback data
             phoenixItemCount = 18286; // Real number from API
             mesaItemCount = 22585;    // Real number from API
+            totalItemsAvailable = phoenixItemCount + mesaItemCount;
         }
         
         filteredItems = [...allItems];
@@ -47,6 +62,7 @@ async function loadAuctionData() {
         updateStats();
         populateCategories();
         filterAndDisplayItems();
+        updateLoadMoreSection();
         
         showContent();
     } catch (error) {
@@ -56,96 +72,174 @@ async function loadAuctionData() {
         // Set the real totals even with fallback data
         phoenixItemCount = 18286; // Real number from API
         mesaItemCount = 22585;    // Real number from API
+        totalItemsAvailable = phoenixItemCount + mesaItemCount;
         filteredItems = [...allItems];
         updateStats();
         populateCategories();
         filterAndDisplayItems();
+        updateLoadMoreSection();
         showContent();
     }
 }
 
-// Fetch real auction data from Algolia
-async function fetchRealAuctionData() {
+// Load more items from the API with pagination
+async function loadMoreItems() {
+    if (isLoadingMore || !hasMoreItems) {
+        return false;
+    }
+    
     try {
-        // Search for items with Phoenix/Mesa location filtering
-        // First try to get Phoenix-specific items
-        let searchData = {
-            query: "",
-            filters: `"Location Name":"Phoenix"`,
-            hitsPerPage: 100
-        };
+        isLoadingMore = true;
         
-        console.log('🔍 Attempting to fetch Phoenix data from Algolia API...');
-        let response = await fetch(`${ALGOLIA_BASE_URL}/query`, {
-            method: 'POST',
-            headers: {
-                'X-Algolia-API-Key': ALGOLIA_API_KEY,
-                'X-Algolia-Application-Id': ALGOLIA_APP_ID,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(searchData)
-        });
-
-        console.log('📡 Phoenix API Response status:', response.status);
-        if (!response.ok) {
-            throw new Error(`Phoenix API error: ${response.status} ${response.statusText}`);
+        // First, get total counts to know how many items are available
+        if (totalItemsAvailable === 0) {
+            const totals = await getItemTotals();
+            phoenixItemCount = totals.phoenix;
+            mesaItemCount = totals.mesa;
+            totalItemsAvailable = phoenixItemCount + mesaItemCount;
         }
-
-        let data = await response.json();
-        console.log('📊 Phoenix API Response:', data);
-        let phoenixItems = data.hits || [];
-        let phoenixTotal = data.nbHits || 0;
         
-        // Also get Mesa items if available
-        searchData = {
-            query: "",
-            filters: `"Location Name":"Mesa"`,
-            hitsPerPage: 50
-        };
+        // Calculate how many items to fetch for each location proportionally
+        const phoenixRatio = phoenixItemCount / totalItemsAvailable;
+        const phoenixItemsToFetch = Math.ceil(API_ITEMS_PER_PAGE * phoenixRatio);
+        const mesaItemsToFetch = API_ITEMS_PER_PAGE - phoenixItemsToFetch;
         
-        console.log('🔍 Attempting to fetch Mesa data from Algolia API...');
-        response = await fetch(`${ALGOLIA_BASE_URL}/query`, {
-            method: 'POST',
-            headers: {
-                'X-Algolia-API-Key': ALGOLIA_API_KEY,
-                'X-Algolia-Application-Id': ALGOLIA_APP_ID,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(searchData)
-        });
-
-        console.log('📡 Mesa API Response status:', response.status);
-        if (!response.ok) {
-            throw new Error(`Mesa API error: ${response.status} ${response.statusText}`);
+        console.log(`🔍 Loading page ${currentApiPage + 1} - Phoenix: ${phoenixItemsToFetch}, Mesa: ${mesaItemsToFetch}`);
+        
+        // Fetch Phoenix items
+        const phoenixItems = await fetchLocationItems('Phoenix', phoenixItemsToFetch, currentApiPage);
+        
+        // Fetch Mesa items
+        const mesaItems = await fetchLocationItems('Mesa', mesaItemsToFetch, currentApiPage);
+        
+        const newItems = [...phoenixItems, ...mesaItems];
+        
+        if (newItems.length > 0) {
+            allItems.push(...newItems);
+            loadedItemsCount += newItems.length;
+            currentApiPage++;
+            
+            console.log(`📦 Loaded ${newItems.length} new items (Total: ${allItems.length}/${totalItemsAvailable})`);
+            
+            // Check if we should continue loading
+            if (loadedItemsCount >= totalItemsAvailable || newItems.length < API_ITEMS_PER_PAGE) {
+                hasMoreItems = false;
+                console.log(`✅ Finished loading all available items: ${allItems.length}`);
+            }
+            
+            return true;
+        } else {
+            hasMoreItems = false;
+            console.log('🏁 No more items to load');
+            return false;
         }
-
-        data = await response.json();
-        console.log('📊 Mesa API Response:', data);
-        let mesaItems = data.hits || [];
-        let mesaTotal = data.nbHits || 0;
         
-        // Store the total counts for stats (use actual API numbers)
-        phoenixItemCount = phoenixTotal;
-        mesaItemCount = mesaTotal;
-        
-        console.log(`✅ Successfully loaded live data: ${phoenixTotal + mesaTotal} total items available`);
-        
-        // Combine both arrays
-        const allHits = [...phoenixItems, ...mesaItems];
-        console.log(`🔥 MASSIVE AUCTION DATABASE DISCOVERED!`);
-        console.log(`Phoenix: ${phoenixItems.length}/${phoenixTotal} items loaded`);
-        console.log(`Mesa: ${mesaItems.length}/${mesaTotal} items loaded`);
-        console.log(`📊 TOTAL AVAILABLE: ${phoenixTotal + mesaTotal} auction items!`);
-        
-        if (allHits.length > 0) {
-            return allHits.map(hit => transformAlgoliaItem(hit));
-        }
-
-        return [];
     } catch (error) {
-        console.error('Algolia fetch failed:', error);
+        console.error('❌ Error loading more items:', error);
+        hasMoreItems = false;
+        return false;
+    } finally {
+        isLoadingMore = false;
+    }
+}
+
+// Get total item counts for both locations
+async function getItemTotals() {
+    try {
+        // Get Phoenix count
+        const phoenixResponse = await fetch(`${ALGOLIA_BASE_URL}/query`, {
+            method: 'POST',
+            headers: {
+                'X-Algolia-API-Key': ALGOLIA_API_KEY,
+                'X-Algolia-Application-Id': ALGOLIA_APP_ID,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: "",
+                filters: `"Location Name":"Phoenix"`,
+                hitsPerPage: 1 // Just need the count
+            })
+        });
+        
+        const phoenixData = await phoenixResponse.json();
+        const phoenixTotal = phoenixData.nbHits || 0;
+        
+        // Get Mesa count
+        const mesaResponse = await fetch(`${ALGOLIA_BASE_URL}/query`, {
+            method: 'POST',
+            headers: {
+                'X-Algolia-API-Key': ALGOLIA_API_KEY,
+                'X-Algolia-Application-Id': ALGOLIA_APP_ID,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: "",
+                filters: `"Location Name":"Mesa"`,
+                hitsPerPage: 1 // Just need the count
+            })
+        });
+        
+        const mesaData = await mesaResponse.json();
+        const mesaTotal = mesaData.nbHits || 0;
+        
+        console.log(`📊 Total items available - Phoenix: ${phoenixTotal}, Mesa: ${mesaTotal}`);
+        
+        return {
+            phoenix: phoenixTotal,
+            mesa: mesaTotal
+        };
+        
+    } catch (error) {
+        console.error('Error getting item totals:', error);
+        return { phoenix: 0, mesa: 0 };
+    }
+}
+
+// Fetch items for a specific location with pagination
+async function fetchLocationItems(location, itemsToFetch, page) {
+    try {
+        const response = await fetch(`${ALGOLIA_BASE_URL}/query`, {
+            method: 'POST',
+            headers: {
+                'X-Algolia-API-Key': ALGOLIA_API_KEY,
+                'X-Algolia-Application-Id': ALGOLIA_APP_ID,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: "",
+                filters: `"Location Name":"${location}"`,
+                hitsPerPage: itemsToFetch,
+                page: page
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`${location} API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const items = data.hits || [];
+        
+        console.log(`📍 ${location}: Loaded ${items.length} items (page ${page})`);
+        
+        return items.map(hit => transformAlgoliaItem(hit));
+        
+    } catch (error) {
+        console.error(`Error fetching ${location} items:`, error);
         return [];
     }
+}
+
+// Generate URL slug from item title
+function generateSlug(title) {
+    if (!title) return 'item';
+    
+    return title
+        .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+        .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+        .substring(0, 80); // Allow longer length to match real URLs
 }
 
 // Transform Algolia item to our format
@@ -188,6 +282,10 @@ function transformAlgoliaItem(hit) {
     // Clean up the title from Lead Description
     const title = hit["Lead Description"] || hit.title || 'Auction Item';
     const cleanTitle = cleanItemTitle(title);
+    
+    // Generate proper URL slug and format the link correctly
+    const slug = generateSlug(cleanTitle);
+    const properUrl = `https://nellisauction.com/p/${slug}/${hit.objectID}`;
 
     return {
         id: hit.objectID,
@@ -203,7 +301,7 @@ function transformAlgoliaItem(hit) {
         timeLeft: timeLeft,
         status: status,
         endTime: endTime,
-        link: `https://www.nellisauction.com/catalog/${hit.objectID}`
+        link: properUrl
     };
 }
 
@@ -388,6 +486,14 @@ function initializeFilters() {
 
 // Filter and display items
 function filterAndDisplayItems() {
+    applyCurrentFilters();
+    currentPage = 1;
+    displayItems();
+    updatePagination();
+}
+
+// Apply current filter settings without resetting page
+function applyCurrentFilters() {
     const locationFilter = document.getElementById('location-filter').value;
     const categoryFilter = document.getElementById('category-filter').value;
     const searchFilter = document.getElementById('search-filter').value.toLowerCase();
@@ -403,10 +509,6 @@ function filterAndDisplayItems() {
         
         return matchesLocation && matchesCategory && matchesSearch && matchesPrice;
     });
-    
-    currentPage = 1;
-    displayItems();
-    updatePagination();
 }
 
 // Display items for current page
@@ -427,6 +529,19 @@ function displayItems() {
         const itemElement = createItemElement(item);
         auctionGrid.appendChild(itemElement);
     });
+    
+    // Check if we need to load more items for upcoming pages
+    const totalFilteredPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const remainingPages = totalFilteredPages - currentPage;
+    
+    // If we're approaching the end of loaded items and there are more available, load more
+    if (remainingPages <= 2 && hasMoreItems && !isLoadingMore && filteredItems.length < totalItemsAvailable) {
+        console.log('📦 Preloading more items for smooth browsing...');
+        loadMoreItems().then(() => {
+            // Update filtered items after loading more
+            applyCurrentFilters();
+        });
+    }
 }
 
 // Create item element
@@ -529,7 +644,16 @@ function updatePagination() {
     
     prevButton.disabled = currentPage === 1;
     nextButton.disabled = currentPage === totalPages || totalPages === 0;
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+    
+    // Show total items available info in pagination
+    const totalAvailable = totalItemsAvailable || filteredItems.length;
+    const currentlyLoaded = filteredItems.length;
+    
+    if (totalAvailable > currentlyLoaded && hasMoreItems) {
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1} (${currentlyLoaded.toLocaleString()} of ${totalAvailable.toLocaleString()} items loaded)`;
+    } else {
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1} (${currentlyLoaded.toLocaleString()} items total)`;
+    }
 }
 
 // Change page
@@ -541,9 +665,73 @@ function changePage(direction) {
         currentPage = newPage;
         displayItems();
         updatePagination();
+        updateLoadMoreSection();
         
         // Scroll to top of items
         document.getElementById('auction-items').scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// Manually load more items
+async function loadMoreItemsManually() {
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const loadMoreInfo = document.getElementById('load-more-info');
+    
+    if (isLoadingMore || !hasMoreItems) {
+        return;
+    }
+    
+    // Update UI to show loading
+    loadMoreBtn.disabled = true;
+    loadMoreBtn.textContent = 'Loading...';
+    loadMoreInfo.textContent = 'Fetching more auction items from Nellis Auction API...';
+    
+    try {
+        const success = await loadMoreItems();
+        
+        if (success) {
+            // Update filtered items with new data
+            applyCurrentFilters();
+            updatePagination();
+            updateStats();
+            
+            loadMoreInfo.textContent = `✅ Loaded more items! Total: ${allItems.length.toLocaleString()} of ${totalItemsAvailable.toLocaleString()}`;
+            
+            // Auto-advance if current page is now shorter due to filtering
+            if (filteredItems.length > 0) {
+                displayItems();
+            }
+        } else {
+            loadMoreInfo.textContent = 'All available items have been loaded!';
+        }
+    } catch (error) {
+        console.error('Error loading more items:', error);
+        loadMoreInfo.textContent = 'Error loading more items. Please try again.';
+    } finally {
+        loadMoreBtn.disabled = !hasMoreItems;
+        loadMoreBtn.textContent = hasMoreItems ? 'Load More Items' : 'All Items Loaded';
+        updateLoadMoreSection();
+    }
+}
+
+// Update Load More section visibility and content
+function updateLoadMoreSection() {
+    const loadMoreSection = document.getElementById('load-more-section');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const loadMoreInfo = document.getElementById('load-more-info');
+    
+    // Show load more section if there are more items available
+    if (totalItemsAvailable > allItems.length && hasMoreItems) {
+        loadMoreSection.classList.remove('hidden');
+        loadMoreBtn.disabled = isLoadingMore;
+        loadMoreBtn.textContent = isLoadingMore ? 'Loading...' : 'Load More Items';
+        
+        if (!isLoadingMore) {
+            const remaining = totalItemsAvailable - allItems.length;
+            loadMoreInfo.textContent = `${remaining.toLocaleString()} more items available to load`;
+        }
+    } else {
+        loadMoreSection.classList.add('hidden');
     }
 }
 
@@ -567,6 +755,7 @@ function showLoading() {
     document.getElementById('filters').classList.add('hidden');
     document.getElementById('auction-items').classList.add('hidden');
     document.getElementById('pagination').classList.add('hidden');
+    document.getElementById('load-more-section').classList.add('hidden');
 }
 
 function showError() {
@@ -576,6 +765,7 @@ function showError() {
     document.getElementById('filters').classList.add('hidden');
     document.getElementById('auction-items').classList.add('hidden');
     document.getElementById('pagination').classList.add('hidden');
+    document.getElementById('load-more-section').classList.add('hidden');
 }
 
 function showContent() {
@@ -585,6 +775,7 @@ function showContent() {
     document.getElementById('filters').classList.remove('hidden');
     document.getElementById('auction-items').classList.remove('hidden');
     document.getElementById('pagination').classList.remove('hidden');
+    updateLoadMoreSection(); // Show load more section if needed
 }
 
 function updateLastUpdated() {
